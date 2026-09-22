@@ -1,0 +1,269 @@
+ 3. Data Control Language
+DCL commands are used to grant and take back authority from any database user.
+Following are the some commands that come under DCL:
+
+Syntax:
+GRANT <obj_priv> ON <obj_name> To <username>;  
+In the above syntax, obj_priv> is the DML statement like Insert, Delete , update and Select and <obj_name> is a table, view etc. and username is the name of the authorized user.
+Example
+GRANT SELECT, UPDATE ON MY_TABLE TO SOME_USER, ANOTHER_USER;  
+b. Revoke: It is used to take back permissions from the user.
+Syntax:
+REVOKE <obj_priv> ON <obj_name> FROM <username>;  
+In the above syntax, obj_priv> is the DML statement like Insert, Delete , update and Select and <obj_name> is a table, view etc. and username is the name of the user from whom the permission is revoked.
+Example
+REVOKE SELECT, UPDATE ON MY_TABLE FROM USER1, USER2;  
+
+
+Grant and Revoke
+============================
+mysql> use codegnan;
+Database changed
+mysql> show tables;
++--------------------+
+| Tables_in_codegnan |
++--------------------+
+| codegnan_emp       |
++--------------------+
+1 row in set (0.23 sec)
+
+mysql> create table students(
+    -> name varchar(20),
+    -> age int,
+    -> mobile varchar(12)
+    -> );
+Query OK, 0 rows affected (0.15 sec)
+
+mysql> insert into students values('student 1',23,'9182454984');
+Query OK, 1 row affected (0.02 sec)
+
+mysql> select*from students;
++-----------+------+------------+
+| name      | age  | mobile     |
++-----------+------+------------+
+| student 1 |   23 | 9182454984 |
++-----------+------+------------+
+1 row in set (0.00 sec)
+
+mysql> create user user1 identified by ‘user1’;
+Query OK, 0 rows affected (0.10 sec)
+
+mysql> grant select,insert,update on students to user1;
+Query OK, 0 rows affected (0.01 sec)
+
+mysql> create user user2 identified by ‘user2’;
+Query OK, 0 rows affected (0.01 sec)
+
+mysql> grant select,update on students to user2;
+Query OK, 0 rows affected (0.01 sec)
+
+
+
+user1 previligeous
+------------------------
+C:\Program Files\MySQL\MySQL Server 8.0\bin>mysql -u USER1 -p
+Enter password: *****
+Welcome to the MySQL monitor.  Commands end with ; or \g.
+Your MySQL connection id is 75
+Server version: 8.0.39 MySQL Community Server - GPL
+
+Copyright (c) 2000, 2024, Oracle and/or its affiliates.
+
+Oracle is a registered trademark of Oracle Corporation and/or its
+affiliates. Other names may be trademarks of their respective
+owners.
+
+Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
+
+mysql> use codegnan;
+Database changed
+mysql> select*from user1;
+ERROR 1142 (42000): SELECT command denied to user 'user1'@'localhost' for table 'user1'
+mysql> select*from students;
++-----------+------+------------+
+| name      | age  | mobile     |
++-----------+------+------------+
+| student 1 |   23 | 9182454984 |
++-----------+------+------------+
+1 row in set (0.00 sec)
+
+mysql> insert into students values('student 2',32,'8834248768');
+Query OK, 1 row affected (0.01 sec)
+
+mysql> insert into student(name,mobile) values('student 3','874772372'),('student 4','689648797');
+ERROR 1142 (42000): INSERT command denied to user 'user1'@'localhost' for table 'student'
+mysql> insert into students(name,mobile) values('student 3','874772372'),('student 4','689648797');
+Query OK, 2 rows affected (0.01 sec)
+Records: 2  Duplicates: 0  Warnings: 0
+
+mysql> update students set age=37 where name='student4';
+Query OK, 0 rows affected (0.01 sec)
+Rows matched: 0  Changed: 0  Warnings: 0
+
+mysql> drop table student;
+ERROR 1142 (42000): DROP command denied to user 'user1'@'localhost' for table 'student'
+mysql> delete table students;
+ERROR 1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'table students' at line 1
+mysql> delete from students where age=37;;
+ERROR 1142 (42000): DELETE command denied to user 'user1'@'localhost' for table 'students'
+ERROR:
+No query specified
+
+mysql>
+
+
+user2 previloges
+====================
+C:\Program Files\MySQL\MySQL Server 8.0\bin>mysql -u USER2 -p
+Enter password: *****
+Welcome to the MySQL monitor.  Commands end with ; or \g.
+Your MySQL connection id is 79
+Server version: 8.0.39 MySQL Community Server - GPL
+
+Copyright (c) 2000, 2024, Oracle and/or its affiliates.
+
+Oracle is a registered trademark of Oracle Corporation and/or its
+affiliates. Other names may be trademarks of their respective
+owners.
+
+Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
+
+mysql> select*from students;
+ERROR 1046 (3D000): No database selected
+mysql> use codegnan;
+Database changed
+mysql> select*from students;
++-----------+------+------------+
+| name      | age  | mobile     |
++-----------+------+------------+
+| student 1 |   23 | 9182454984 |
+| student 2 |   32 | 8834248768 |
+| student 3 | NULL | 874772372  |
+| student 4 | NULL | 689648797  |
++-----------+------+------------+
+4 rows in set (0.01 sec)
+
+mysql> insert into students values('djs',09,'9889');
+ERROR 1142 (42000): INSERT command denied to user 'user2'@'localhost' for table 'students'
+mysql> drop table students;
+ERROR 1142 (42000): DROP command denied to user 'user2'@'localhost' for table 'students'
+mysql> update students age=40 where name='student 4';
+ERROR 1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near '=40 where name='student 4'' at line 1
+mysql> update students set age=40 where name='student 4';
+Query OK, 1 row affected (0.01 sec)
+Rows matched: 1  Changed: 1  Warnings: 0
+
+mysql> select*from students;
++-----------+------+------------+
+| name      | age  | mobile     |
++-----------+------+------------+
+| student 1 |   23 | 9182454984 |
+| student 2 |   32 | 8834248768 |
+| student 3 | NULL | 874772372  |
+| student 4 |   40 | 689648797  |
++-----------+------+------------+
+4 rows in set (0.00 sec)
+
+mysql>
+
+
+===============================================================================
+Revoke
+---------
+mysql> revoke update on students from user2;
+Query OK, 0 rows affected (0.01 sec)
+
+update students set age=40 where name='student 4';
+ERROR 1142 (42000): UPDATE command denied to user 'user2'@'localhost' for table 'students'
+
+LOCK
+---------
+-- Set transaction isolation level to READ COMMITTED
+SET TRANSACTION ISOLATION LEVEL READ COMMITTED;
+ 
+5.
+START TRANSACTION;
+ 
+-- Select the record for EMP_ID 'E001' and lock it for update
+SELECT * FROM CODEGNAN_EMP WHERE EMP_ID = 'E001' FOR UPDATE;
+ 
+-- At this point, the record with EMP_ID 'E001' is locked for update within this transaction.
+-- Other transactions will be blocked from updating this record until the current transaction is committed or rolled back.
+ 
+-- Update the AGE column for EMP_ID 'E001'
+UPDATE CODEGNAN_EMP SET AGE = 31 WHERE EMP_ID = 'E001';
+ 
+-- Commit the transaction to apply changes
+COMMIT;
+ 
+ 
+ROLLBACK
+-------------
+-- Start a new transaction
+START TRANSACTION;
+ 
+-- Attempt to update the AGE column (example update that might fail)
+UPDATE CODEGNAN_EMP SET AGE = 32 WHERE EMP_ID = 'E001';
+ 
+-- Simulate an error that prevents the update from completing
+-- For example, an error might occur due to a constraint violation or data validation failure.
+ 
+-- Select all records from CODEGNAN_EMP to observe the state before rollback
+SELECT * FROM CODEGNAN_EMP;
+ 
+-- Rollback the transaction to undo changes
+ROLLBACK;
+ 
+-- Select all records from CODEGNAN_EMP after rollback to verify changes were undone
+SELECT * FROM CODEGNAN_EMP;
+ 
+ 
+EXAMPLE2
+--------------
+-- Start a new transaction
+START TRANSACTION;
+ 
+-- Update the ADDRESS column for EMP_ID 'E002'
+UPDATE CODEGNAN_EMP SET ADDRESS = '789 Elm St' WHERE EMP_ID = 'E002';
+ 
+-- Select all records from CODEGNAN_EMP to observe changes after first update
+SELECT * FROM CODEGNAN_EMP;
+ 
+-- Update the DEPT column for EMP_ID 'E002'
+UPDATE CODEGNAN_EMP SET DEPT = 'Finance' WHERE EMP_ID = 'E002';
+ 
+-- Select all records from CODEGNAN_EMP to observe changes after second update
+SELECT * FROM CODEGNAN_EMP;
+ 
+-- Rollback the transaction to undo changes
+ROLLBACK;
+ 
+-- Select all records from CODEGNAN_EMP to verify changes were rolled back
+SELECT * FROM CODEGNAN_EMP WHERE EMP_ID = 'E002';
+ 
+SAVEPOINT
+--------------
+-- Start a new transaction
+START TRANSACTION;
+ 
+-- Update the AGE column for EMP_ID 'E001'
+UPDATE CODEGNAN_EMP SET AGE = 32 WHERE EMP_ID = 'E001';
+ 
+-- Set a SAVEPOINT named 'update_savepoint'
+SAVEPOINT update_savepoint;
+ 
+-- Update the ADDRESS column for EMP_ID 'E001'
+UPDATE CODEGNAN_EMP SET ADDRESS = '456 Main St' WHERE EMP_ID = 'E001';
+ 
+-- Select all records to observe changes
+SELECT * FROM CODEGNAN_EMP;
+ 
+-- Rollback to the SAVEPOINT 'update_savepoint'
+ROLLBACK TO SAVEPOINT update_savepoint;
+ 
+-- Select all records again to verify changes were rolled back
+SELECT * FROM CODEGNAN_EMP WHERE EMP_ID = 'E001';
+ 
+-- Commit the transaction
+COMMIT;
+
