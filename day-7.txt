@@ -1,0 +1,274 @@
+Constraints in MySQL
+What are Constraints?
+Constraints are rules applied to table columns in MySQL to ensure that only valid and accurate data is stored in the database.
+In simple words:
+Constraints = Rules that control the data entered into a table.
+Why do we use Constraints?
+Constraints are used to:
+ Maintain data integrity
+ Prevent invalid data entry
+ Avoid duplicate records
+ Ensure relationships between tables
+ Make the database reliable and consistent
+integrity constraints:-
+•	1) NOT NULL
+•	2) UNIQUE
+•	3) PRIMARY KEY
+.        4) composite key
+•	5) FOREIGN KEY or REFERENCECIAL INTEGRITY
+•	6)CHECK
+        7) default constraint
+ 
+not null: cannot allowed null values
+use mydb;
+create table student1
+(sno int(3)not null,
+sname varchar(10), marks int(3));
+insert into student1 values (101,"arun",50);
+select*from student1;
+insert into student1 values (null,"kiran",70);   -- error
+unique:- not allowed duplicate values
+Column level constraints
+use hr;
+create table student1
+(sno int(3)unique,
+sname varchar(10),
+ marks int(3));
+  insert into student1 values(101,"arun",50);
+    insert into student1 values(101,"kiran",60);
+    insert into student1 values(null,"malli",70);
+    insert into student1 values(null,"mouni",80);
+ 
+--table level constraints
+use malli;
+create table student1
+(sno int(3),
+sname varchar(10),
+ marks int(3)
+unique(sno));
+ 
+primarykey: combination of unique +null
+use malli;
+create table student1
+(sno int(3) primary key,  -- not null union	
+sname varchar(10),
+ marks int(3));
+ 
+ insert into student1 values(101,"arun",50); -- valid
+ insert into student1 values(101,"ramesh",60); -- invalid
+ insert into student1 values(null,"suresh",60); -- invalid
+ 
+composite key: we can create a primary key in a combination of 2 columns called a composite key.
+Composite keys can be applied only at table level.
+ 
+use malli;
+create table student1
+(sno int(3) ,
+Class int(3),
+sname varchar(10),
+ marks int(3),
+primary key(sno,class));
+ 
+foreign key:-
+a foreign key is a key  used to link two tables together.
+ 
+A foreign key is a field(or collection of fields) in one table that refers to the primary key in another table.
+ 
+The table containing the foreign key is called the child table. And the table containing the candidate key is called the referenced or parent table
+ 
+//parent table
+use mydb;
+create table school(
+sno int(3),
+sname varchar(15),
+marks int(3),
+primary key(sno));
+ 
+insert into school values(101,"arun",90);
+insert into school values(102,"kiran",70);
+insert into school values(103,"amit",80);
+ 
+select* from school;
+ 
+//child table
+create table library
+(sno int(3), foreign key(sno) references school (sno),
+book_name varchar(10));
+insert into library values(102,"java");
+select*from library;
+insert into library values(108,"c");  -- not allowed
+insert into library values(null,".net");
+ 
+check constraint:-
+use sys;
+create table student
+(sno int(5),
+sname varchar(15),
+marks int(5) check(marks between 50 and 100));
+insert into student values(101,"amith",60); -- valid
+insert into student values(101,"amith",45); -- invalid
+select*from student;
+insert into student values(101,"amith",105); -- invalid
+ 
+default constraint:-
+create table order
+(id int(5),
+ordernumber int(5),
+orderdate datetime default now());
+
+
+select now();
+insert into orders values(101,1342375,"2023-02-10 01:21:31");
+select*from orders;
+insert into orders (id,ordernumber) values (102, 4244667);
+
+What are Referential Actions?
+ Referential actions define what happens to child table data when the parent table data is updated or deleted.
+They are used with FOREIGN KEY constraints.
+1. ON DELETE CASCADE
+ Concept
+When a parent row is deleted, all matching child rows are automatically deleted.
+🔧 What it does
+ Keeps data consistent by removing dependent records automatically.
+
+ Example
+-- Parent Table
+CREATE TABLE Departments (
+   dept_id INT PRIMARY KEY,
+   dept_name VARCHAR(50)
+);
+
+-- Child Table
+CREATE TABLE Employees (
+   emp_id INT PRIMARY KEY,
+   name VARCHAR(100),
+   dept_id INT,
+   FOREIGN KEY (dept_id)
+   REFERENCES Departments(dept_id)
+   ON DELETE CASCADE
+);
+ Insert Records
+INSERT INTO Departments VALUES
+(1, 'IT'),
+(2, 'HR');
+
+INSERT INTO Employees VALUES
+(101, 'Rahul', 1),
+(102, 'Sneha', 1),
+(103, 'Amit', 2);
+ Operation
+DELETE FROM Departments WHERE dept_id = 1;
+ Result
+Dept 1 deleted
+Employees with dept_id = 1 also deleted automatically
+
+🔹 2. ON UPDATE CASCADE
+ Concept
+When a parent key is updated, all matching child foreign keys are updated automatically.
+ What it does
+ Maintains consistency when primary key changes.
+
+ Example
+CREATE TABLE Employees (
+   emp_id INT PRIMARY KEY,
+   name VARCHAR(100),
+   dept_id INT,
+   FOREIGN KEY (dept_id)
+   REFERENCES Departments(dept_id)
+   ON UPDATE CASCADE
+);
+ Insert Records
+INSERT INTO Departments VALUES
+(1, 'IT'),
+(2, 'HR');
+
+INSERT INTO Employees VALUES
+(101, 'Rahul', 1),
+(102, 'Sneha', 1),
+(103, 'Amit', 2);
+ Operation
+UPDATE Departments SET dept_id = 10 WHERE dept_id = 1;
+ Result
+dept_id changed from 1 → 10
+Employees dept_id also updated automatically to 10
+
+ 3. ON DELETE SET NULL
+ Concept
+When a parent row is deleted, the child foreign key becomes NULL.
+ What it does
+ Keeps the child record but removes the relationship.
+ Column must allow NULL
+
+ Example
+CREATE TABLE Employees (
+   emp_id INT PRIMARY KEY,
+   name VARCHAR(100),
+   dept_id INT NULL,
+   FOREIGN KEY (dept_id)
+   REFERENCES Departments(dept_id)
+   ON DELETE SET NULL
+);
+Insert Records
+INSERT INTO Departments VALUES
+(1, 'IT'),
+(2, 'HR');
+
+INSERT INTO Employees VALUES
+(101, 'Rahul', 1),
+(102, 'Sneha', 1),
+(103, 'Amit', 2);
+ Operation
+DELETE FROM Departments WHERE dept_id = 1;
+ Result
+Dept 1 deleted
+Employees remain, but dept_id becomes NULL
+
+🔹 4. ON UPDATE SET NULL
+ Concept
+When a parent key is updated, the child foreign key becomes NULL.
+ What it does
+ Breaks relationships instead of updating value.
+ Column must allow NULL
+
+ Example
+CREATE TABLE Employees (
+   emp_id INT PRIMARY KEY,
+   name VARCHAR(100),
+   dept_id INT NULL,
+   FOREIGN KEY (dept_id)
+   REFERENCES Departments(dept_id)
+   ON UPDATE SET NULL
+);
+🔽 Insert Records
+INSERT INTO Departments VALUES
+(1, 'IT'),
+(2, 'HR');
+
+INSERT INTO Employees VALUES
+(101, 'Rahul', 1),
+(102, 'Sneha', 1),
+(103, 'Amit', 2);
+🔽 Operation
+UPDATE Departments SET dept_id = 10 WHERE dept_id = 1;
+ Result
+Parent updated
+Child dept_id becomes NULL (not 10)
+
+ Final Summary
+Action
+When Parent Changes
+Child Table Result
+ON DELETE CASCADE
+Delete parent
+Child rows deleted
+ON UPDATE CASCADE
+Update parent
+Child updated
+ON DELETE SET NULL
+Delete parent
+Child set to NULL
+ON UPDATE SET NULL
+Update parent
+Child set to NULL
+
+
